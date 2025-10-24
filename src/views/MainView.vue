@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useSlots } from '@/composables/useSlots'
+import { useSlotRows } from '@/composables/useSlotRows'
 import { useStats } from '@/composables/useStats'
 import { useParts } from '@/composables/useParts'
+import { useWeapons } from '@/composables/useWeapons'
 
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import StatsCard from '@/components/StatsCard.vue'
+import BodyPartsCard from '@/components/BodyPartsCard.vue'
+import WeaponCard from '@/components/WeaponCard.vue'
 
-const { parts, partTypes, getPartsByType, fetchParts } = useParts()
-const { slots, addSlot, totalPartStats } = useSlots(parts)
+const { partTypes, partsByType, fetchParts } = useParts()
+const { slots, totalPartStats, addSlot, removeSlot } = useSlotRows()
 const { baseStats, liveStats } = useStats(totalPartStats)
+const { weapons, updateBaseAttr, weaponsLiveAttr } = useWeapons()
 
 onMounted(() => {
 	fetchParts()
@@ -32,41 +36,31 @@ onMounted(() => {
 				/>
 			</div>
 			<!-- Part -->
-			<div class="card w-full bg-base-100 shadow-md card-border relative">
-				<div class="card-body">
-					<button class="btn btn-sm btn-neutral btn-dash w-min absolute right-2 -top-1 text-lg" @click="addSlot">+</button>
-					<div class="overflow-x-auto">
-						<table class="table table-xs whitespace-nowrap min-w-max">
-							<thead>
-								<tr>
-									<th class="w-40">Type</th>
-									<th>Part name</th>
-									<th class="w-24">Number</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr v-for="row in slots" :key="row.id">
-									<td>
-										<select class="select select-sm w-full" v-model="row.type">
-											<option selected></option>
-											<option v-for="type in partTypes"
-												:key="type"
-												:value="type">{{ type }}</option>
-										</select>
-									</td>
-									<td>
-										<select class="select select-sm w-full" v-model="row.partName">
-											<option v-for="(partName, index) in getPartsByType.get(row.type)"
-												:key="index"
-												:value="partName">{{ partName }}</option>
-										</select>
-									</td>
-									<td><input class="input input-bordered input-sm w-full" type="number" v-model="row.number"/></td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-				</div>
+			<BodyPartsCard
+				:partTypes="partTypes"
+				:partsByType="partsByType"
+				v-model:childSlots="slots"
+				@addSlot="addSlot"
+				@removeSlot="(id) => { removeSlot(id) }"
+			/>
+			<div class="grid grid-cols-1 gap-4 justify-items-center">
+				<WeaponCard
+					v-for="weapon in weaponsLiveAttr" :key="weapon.id"
+					:title="`Weapon ${weapon.id + 1}`"
+					:liveAttr1="weapon.liveAttr1"
+					:liveAttr2="weapon.liveAttr2"
+					@updateBaseAttr="(attr) => { updateBaseAttr(weapon.id, attr) }"
+				/>
+			</div>
+			<div class="grid grid-cols-1 gap-4 ">
+				<BodyPartsCard
+					v-for="weapon in weapons" :key="weapon.id"
+					:partTypes="partTypes"
+					:partsByType="partsByType"
+					v-model:childSlots="weapon.slotRows.slots"
+					@addSlot="weapon.slotRows.addSlot"
+					@removeSlot="(id) => weapon.slotRows.removeSlot(id)"
+				/>
 			</div>
 		</div>
 	</DefaultLayout>

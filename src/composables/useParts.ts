@@ -1,13 +1,13 @@
 import { reactive, toRef, computed } from 'vue'
-import type { Part } from '@/types/part'
+import type { Part, WeaponPartType } from '@/types/part'
 
 const PARTS_URL = 'https://raw.githubusercontent.com/kritpongt/data_tune_up_parts/refs/heads/main/parts.json'
+
 interface UsePartsState{
 	data: Part[]
 	loading: boolean
 	err: Error | null
 }
-
 const state = reactive<UsePartsState>({
 	data: [],
 	loading: false,
@@ -37,11 +37,11 @@ export function useParts(){
 		return Array.from(new Set(state.data.map(part => part.type).filter(Boolean))) || []
 	})
 
-	// const getPartsByType = (type: string) => {
-	// 	if(!type){ return [] }
-	// 	return state.data.filter(part => part.type === type)
-	// }
-	const getPartsByType = computed(() => {
+	// const weaponPartTypes = computed(() => {
+	// 	return Array.from(new Set(state.data.map(part => part.type).filter(Boo))) || []
+	// })
+
+	const partsByType = computed(() => {
 		const map = new Map<string, string[]>()
 		state.data.forEach((part) => {
 			const key = part.type
@@ -61,6 +61,6 @@ export function useParts(){
 		err: toRef(state, 'err'),
 		parts: toRef(state, 'data'),
 		partTypes,
-		getPartsByType
+		partsByType
 	}
 }

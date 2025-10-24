@@ -1,25 +1,26 @@
-import { reactive, computed, type Ref } from 'vue'
+import { reactive, computed/* , type Ref */ } from 'vue'
 import type { Stats } from '@/types/stats'
-import type { Part } from '@/types/part'
+import { type Part, getModValue } from '@/types/part'
+import type { Slot } from '@/types/slot'
+import type { Weapon } from '@/types/weapon'
 
-export type Slot = {
-	id: number
-	type: string
-	partName: string
-	number: number | null
-}
+import { useParts } from '@/composables/useParts'
 
-export function useSlots(parts: Ref<Part[]>){
+export function useSlotRows(/* parts: Ref<Part[]> */){
 	const slots = reactive<Slot[]>([
 		{ id: 0, type: '', partName: '', number: null },
 		{ id: 1, type: '', partName: '', number: null },
 		{ id: 2, type: '', partName: '', number: null }
 	])
 
+	const nextId = computed(() => {
+		if(slots.length === 0){ return 0 }
+		return Math.max(...slots.map((slots) => slots.id)) + 1
+	})
+
 	const addSlot = () => {
-		const newId = slots.length > 0 ? Math.max(...slots.map(row => row.id)) + 1 : 0
 		slots.push({
-			id: newId,
+			id: nextId.value,
 			type: '',
 			partName: '',
 			number: null
@@ -27,13 +28,16 @@ export function useSlots(parts: Ref<Part[]>){
 	}
 
 	const removeSlot = (id: number) => {
-		const index = slots.findIndex(row => row.id === id)
-		if(index !== -1){
-			slots.splice(index, 1)
-		}
+		if(slots.length <= 1){ return false }
+
+		const index = slots.findIndex((slot) => slot.id === id)
+		if(index !== -1){ slots.splice(index, 1) }
+
+		return false
 	}
 
 	const partsLookup = computed(() => {
+		const { parts } = useParts()
 		const map = new Map<string, Part>()
 		if(parts.value && parts.value.length > 0){
 			for(const part of parts.value){
@@ -79,10 +83,38 @@ export function useSlots(parts: Ref<Part[]>){
 		return result
 	})
 
+	const totalPartMods = computed(() => {
+		const result = {
+			force: 1,
+			ammo: 1,
+			range: 1,
+			speed: 1,
+			int: 1
+		} as Weapon
+
+		const lookup = partsLookup.value
+
+		slots.forEach((slot) => {
+			if(slot.type && slot.partName && (slot.number !== null && slot.number > 0)){
+				const key = `${slot.type}:${slot.partName}`
+				const partAttr = lookup.get(key)
+				if(partAttr){
+					result.force = Math.max(1 + (getModValue(partAttr, 'force') * slot.number), 0)
+					result.ammo = Math.max(1 + (getModValue(partAttr, 'ammo') * slot.number), 0)
+					result.range = Math.max(1 + (getModValue(partAttr, 'range') * slot.number), 0)
+					result.speed = Math.max(1 + (getModValue(partAttr, 'speed') * slot.number), 0)
+					result.int = Math.max(1 + (getModValue(partAttr, 'int') * slot.number), 0)
+				}
+			}
+		})
+		return result
+	})
+
 	return{
 		slots,
+		totalPartStats,
+		totalPartMods,
 		addSlot,
-		removeSlot,
-		totalPartStats
+		removeSlot
 	}
 }

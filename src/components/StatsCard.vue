@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Stats } from '@/types/stats'
 
-interface StatsCardProps {
+interface StatsCardProps{
 	title: string
 	editable?: boolean
 }
-withDefaults(defineProps<StatsCardProps>(), {
+const props = withDefaults(defineProps<StatsCardProps>(), {
 	editable: false
 })
 
@@ -26,7 +26,7 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 	<div class="card w-full md:w-[30rem] bg-base-100 shadow-md card-border">
 		<div class="card-body">
 			<div class="flex justify-between">
-				<h2 class="text-xl font-bold">{{ title }}</h2>
+				<h2 class="text-xl font-bold">{{ props.title }}</h2>
 			</div>
 			<div class="overflow-x-auto">
 				<table class="table table-xs w-full whitespace-nowrap">
@@ -41,7 +41,7 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 					<tbody>
 						<tr>
 							<th>Capa</th>
-							<td v-if="editable">
+							<td v-if="props.editable">
 								<div class="text-center">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
@@ -55,7 +55,7 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 							</td>
 							<td v-else><div class="text-center text-2xl">{{ childStats.capa.current }} / {{ childStats.capa.max }}</div></td>
 							<th>STR</th>
-							<td v-if="editable">
+							<td v-if="props.editable">
 								<div class="text-right">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
@@ -67,7 +67,7 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 						</tr>
 						<tr>
 							<th>HP</th>
-							<td v-if="editable">
+							<td v-if="props.editable">
 								<div class="text-center">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
@@ -77,7 +77,7 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 							</td>
 							<td v-else><div class="text-center text-2xl">{{ childStats.hp}}</div></td>
 							<th>TEC</th>
-							<td v-if="editable">
+							<td v-if="props.editable">
 								<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
 									type="number"
@@ -89,7 +89,7 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 						</tr>
 						<tr>
 							<th>Slots</th>
-							<td v-if="editable">
+							<td v-if="props.editable">
 								<div class="text-center">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
@@ -99,7 +99,7 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 							</td>
 							<td v-else><div class="text-center text-2xl">{{ childStats.slots }}</div></td>
 							<th>WLK</th>
-							<td v-if="editable">
+							<td v-if="props.editable">
 								<div class="text-right">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
@@ -113,7 +113,7 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 							<th></th>
 							<td></td>
 							<th>FLY</th>
-							<td v-if="editable">
+							<td v-if="props.editable">
 								<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
 									type="number"
@@ -127,7 +127,7 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 							<th></th>
 							<td></td>
 							<th>TGH</th>
-							<td v-if="editable">
+							<td v-if="props.editable">
 								<div class="text-right">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
