@@ -1,25 +1,46 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import type { Weapon } from '@/types/weapon'
 
 interface WeaponCardProps{
 	title: string
-	liveAttr1: Weapon
-	liveAttr2: Record<string, string>
+	liveAttr1: Record<string, number>
+	liveAttr2: Record<string, number>
 }
 interface WeaponCardEmits{
+	addWeapon: []
 	updateBaseAttr: [attr: Partial<Weapon>]
+	updateWeaponType: [type: string]
 }
 
 const props = defineProps<WeaponCardProps>()
 const emit = defineEmits<WeaponCardEmits>()
 
+const handleAddWeapon = () => {
+	emit('addWeapon')
+}
 const handleUpdateBaseAttr = (key: keyof Weapon, value: number) => {
 	emit('updateBaseAttr', { [key]: value })
+}
+const childSelected = ref<string>('ALL')
+watch(childSelected, (newType) => {
+	emit('updateWeaponType', newType)
+})
+
+const formatSigned = (value: number = 0) => {
+	// return value.toLocaleString('en-US', { signDisplay: 'always' })
+	return value >= 0 ? `+${value}` : value
 }
 </script>
 
 <template>
 	<fieldset class="fieldset bg-base-100 rounded-box card-border shadow-md p-[1.5rem] w-full md:w-[30rem] relative">
+		<div class="filter absolute left-32 -top-7">
+			<input class="btn btn-xs filter-reset" type="radio" :name="`filter-${props.title}`" aria-label="All" value="ALL" v-model="childSelected"/>
+			<input class="btn btn-xs" type="radio" :name="`filter-${props.title}`" aria-label="MAIN" value="MAIN" v-model="childSelected"/>
+			<input class="btn btn-xs" type="radio" :name="`filter-${props.title}`" aria-label="SUB" value="SUB" v-model="childSelected"/>
+		</div>
+		<button class="btn btn-sm btn-neutral btn-dash w-min absolute right-2 -top-8 text-lg" @click="handleAddWeapon">+</button>
 		<legend class="fieldset-legend text-xl font-bold">{{ props.title }}</legend>
 		<div class="overflow-x-auto mt-[-1rem]">
 			<table class="table table-xs w-full whitespace-nowrap">
@@ -34,8 +55,8 @@ const handleUpdateBaseAttr = (key: keyof Weapon, value: number) => {
 				<tbody>
 					<tr>
 						<th>Force</th>
-						<td class="text-center text-2xl">{{ liveAttr1.force }}</td>
-						<th>({{ liveAttr2.force }})</th>
+						<td class="text-center text-2xl">{{ liveAttr2.force }}</td>
+						<th>({{ formatSigned(liveAttr1.force) }})</th>
 						<td>
 							<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
@@ -46,8 +67,8 @@ const handleUpdateBaseAttr = (key: keyof Weapon, value: number) => {
 					</tr>
 					<tr>
 						<th>Ammo</th>
-						<td class="text-center text-2xl">{{ liveAttr1.ammo }}</td>
-						<th>({{ liveAttr2.ammo }})</th>
+						<td class="text-center text-2xl">{{ liveAttr2.ammo }}</td>
+						<th>({{ formatSigned(liveAttr1.ammo) }})</th>
 						<td>
 							<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
@@ -58,8 +79,8 @@ const handleUpdateBaseAttr = (key: keyof Weapon, value: number) => {
 					</tr>
 					<tr>
 						<th>Range</th>
-						<td class="text-center text-2xl">{{ liveAttr1.range }}</td>
-						<th>({{ liveAttr2.range }})</th>
+						<td class="text-center text-2xl">{{ liveAttr2.range }}</td>
+						<th>({{ formatSigned(liveAttr1.range) }})</th>
 						<td>
 							<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
@@ -70,8 +91,8 @@ const handleUpdateBaseAttr = (key: keyof Weapon, value: number) => {
 					</tr>
 					<tr>
 						<th>Speed</th>
-						<td class="text-center text-2xl">{{ liveAttr1.speed }}</td>
-						<th>({{ liveAttr2.speed }})</th>
+						<td class="text-center text-2xl">{{ liveAttr2.speed }}</td>
+						<th>({{ formatSigned(liveAttr1.speed) }})</th>
 						<td>
 							<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
@@ -82,8 +103,8 @@ const handleUpdateBaseAttr = (key: keyof Weapon, value: number) => {
 					</tr>
 					<tr>
 						<th>Int</th>
-						<td class="text-center text-2xl">{{ liveAttr1.int }}</td>
-						<th>({{ liveAttr2.int }})</th>
+						<td class="text-center text-2xl">{{ liveAttr2.int }}</td>
+						<th>({{ formatSigned(liveAttr1.int) }})</th>
 						<td>
 							<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"

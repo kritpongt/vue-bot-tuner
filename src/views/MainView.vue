@@ -7,17 +7,15 @@ import { useWeapons } from '@/composables/useWeapons'
 
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import StatsCard from '@/components/StatsCard.vue'
-import BodyPartsCard from '@/components/BodyPartsCard.vue'
+import PartsCard from '@/components/PartsCard.vue'
 import WeaponCard from '@/components/WeaponCard.vue'
 
-const { partTypes, partsByType, fetchParts } = useParts()
-const { slots, totalPartStats, addSlot, removeSlot } = useSlotRows()
+const { partTypes, weaponPartTypes, partsByType, fetchParts } = useParts()
+const { slots, totalPartStats, addSlot, removeSlot } = useSlotRows(5)
 const { baseStats, liveStats } = useStats(totalPartStats)
-const { weapons, updateBaseAttr, weaponsLiveAttr } = useWeapons()
+const { weapons, weaponsLiveAttr, addWeapon, updateBaseAttr, updateWeaponType } = useWeapons()
 
-onMounted(() => {
-	fetchParts()
-})
+onMounted(() => { fetchParts() })
 </script>
 
 <template>
@@ -36,10 +34,10 @@ onMounted(() => {
 				/>
 			</div>
 			<!-- Part -->
-			<BodyPartsCard
+			<PartsCard :customClass="['max-h-[614px]']"
 				:partTypes="partTypes"
 				:partsByType="partsByType"
-				v-model:childSlots="slots"
+				v-model:slots="slots"
 				@addSlot="addSlot"
 				@removeSlot="(id) => { removeSlot(id) }"
 			/>
@@ -49,15 +47,18 @@ onMounted(() => {
 					:title="`Weapon ${weapon.id + 1}`"
 					:liveAttr1="weapon.liveAttr1"
 					:liveAttr2="weapon.liveAttr2"
+					@addWeapon="addWeapon"
 					@updateBaseAttr="(attr) => { updateBaseAttr(weapon.id, attr) }"
+					@updateWeaponType="(type) => { updateWeaponType(weapon.id, type) }"
 				/>
 			</div>
 			<div class="grid grid-cols-1 gap-4 ">
-				<BodyPartsCard
+				<PartsCard :customClass="['max-h-[286px]']"
 					v-for="weapon in weapons" :key="weapon.id"
-					:partTypes="partTypes"
+					:selectWeaponType="weapon.weaponType.value"
+					:partTypes="weaponPartTypes"
 					:partsByType="partsByType"
-					v-model:childSlots="weapon.slotRows.slots"
+					v-model:slots="weapon.slotRows.slots"
 					@addSlot="weapon.slotRows.addSlot"
 					@removeSlot="(id) => weapon.slotRows.removeSlot(id)"
 				/>

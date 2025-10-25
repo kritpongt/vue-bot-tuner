@@ -1,19 +1,21 @@
-import { reactive, computed } from 'vue'
+import { ref, reactive, shallowReactive, computed, unref, type Reactive, type Ref } from 'vue'
 import type { Weapon } from "@/types/weapon"
 import { useSlotRows } from '@/composables/useSlotRows'
 
 interface WeaponInstance{
 	id: number
-	baseAttr: Weapon
+	weaponType: Ref<string>
+	baseAttr: Reactive<Weapon>
 	slotRows: ReturnType<typeof useSlotRows>
 }
 
 export function useWeapons(){
-	const weaponInstances = reactive<WeaponInstance[]>([
+	const weaponInstances = shallowReactive<WeaponInstance[]>([
 		{
 			id: 0,
-			baseAttr: { force: 0, ammo: 0, range: 0, speed: 0, int: 0 },
-			slotRows: useSlotRows()
+			weaponType: ref('ALL'),
+			baseAttr: reactive({ force: 0, ammo: 0, range: 0, speed: 0, int: 0 }),
+			slotRows: useSlotRows(3)
 		}
 	])
 
@@ -23,7 +25,12 @@ export function useWeapons(){
 	})
 
 	const addWeapon = () => {
-
+		weaponInstances.push({
+			id: nextId.value,
+			weaponType: ref('ALL'),
+			baseAttr: reactive({ force: 0, ammo: 0, range: 0, speed: 0, int: 0 }),
+			slotRows: useSlotRows(3)
+		})
 	}
 
 	const removeWeapon = () => {
@@ -37,34 +44,39 @@ export function useWeapons(){
 
 	const weaponsLiveAttr = computed(() => {
 		return weaponInstances.map((w) => {
-			const modifier = w.slotRows.totalPartMods
+			const modifier = unref(w.slotRows.totalPartMods)
 
-			const liveAttr1 = {
-				force: Math.ceil(w.baseAttr.force * modifier.force),
-				ammo: Math.ceil(w.baseAttr.ammo * modifier.ammo),
-				range: Math.ceil(w.baseAttr.range * modifier.range),
-				speed: Math.ceil(w.baseAttr.speed * modifier.speed),
-				int: Math.ceil(w.baseAttr.int * modifier.int)
-			}
+			const liveAttr1 = Object.fromEntries(
+				Object.entries(w.baseAttr).map(([key, value]) => {
+					return [key, Math.ceil(value * modifier[key as keyof Weapon])]
+				})
+			)
 
 			const liveAttr2 = Object.fromEntries(
 				Object.entries(liveAttr1).map(([key, value]) => {
-					return [key, (Math.ceil(value * 10000) / 10000).toFixed(4)]
+					return [key, w.baseAttr[key as keyof Weapon] + value]
 				})
 			)
 
 			return {
 				id: w.id,
-				liveAttr1, liveAttr2
+				liveAttr1,
+				liveAttr2
 			}
 		})
 	})
+
+	const updateWeaponType = (weaponId: number, type: string) => {
+		const weapon = weaponInstances.find((w) => w.id === weaponId)
+		if(weapon){ weapon.weaponType.value = type }
+	}
 
 	return {
 		weapons: weaponInstances,
 		weaponsLiveAttr,
 		addWeapon,
 		removeWeapon,
-		updateBaseAttr
+		updateBaseAttr,
+		updateWeaponType
 	}
 }

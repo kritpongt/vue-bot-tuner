@@ -1,4 +1,4 @@
-import { reactive, computed/* , type Ref */ } from 'vue'
+import { reactive, computed } from 'vue'
 import type { Stats } from '@/types/stats'
 import { type Part, getModValue } from '@/types/part'
 import type { Slot } from '@/types/slot'
@@ -6,12 +6,17 @@ import type { Weapon } from '@/types/weapon'
 
 import { useParts } from '@/composables/useParts'
 
-export function useSlotRows(/* parts: Ref<Part[]> */){
-	const slots = reactive<Slot[]>([
-		{ id: 0, type: '', partName: '', number: null },
-		{ id: 1, type: '', partName: '', number: null },
-		{ id: 2, type: '', partName: '', number: null }
-	])
+export function useSlotRows(initSlots: number = 3){
+	const { parts } = useParts()
+
+	const slots = reactive<Slot[]>(
+		Array.from({ length: initSlots }, (_, index) => ({
+				id: index,
+				type: '',
+				partName: '',
+				number: null
+		}))
+	)
 
 	const nextId = computed(() => {
 		if(slots.length === 0){ return 0 }
@@ -37,7 +42,6 @@ export function useSlotRows(/* parts: Ref<Part[]> */){
 	}
 
 	const partsLookup = computed(() => {
-		const { parts } = useParts()
 		const map = new Map<string, Part>()
 		if(parts.value && parts.value.length > 0){
 			for(const part of parts.value){
@@ -85,11 +89,11 @@ export function useSlotRows(/* parts: Ref<Part[]> */){
 
 	const totalPartMods = computed(() => {
 		const result = {
-			force: 1,
-			ammo: 1,
-			range: 1,
-			speed: 1,
-			int: 1
+			force: 0,
+			ammo: 0,
+			range: 0,
+			speed: 0,
+			int: 0
 		} as Weapon
 
 		const lookup = partsLookup.value
@@ -99,11 +103,11 @@ export function useSlotRows(/* parts: Ref<Part[]> */){
 				const key = `${slot.type}:${slot.partName}`
 				const partAttr = lookup.get(key)
 				if(partAttr){
-					result.force = Math.max(1 + (getModValue(partAttr, 'force') * slot.number), 0)
-					result.ammo = Math.max(1 + (getModValue(partAttr, 'ammo') * slot.number), 0)
-					result.range = Math.max(1 + (getModValue(partAttr, 'range') * slot.number), 0)
-					result.speed = Math.max(1 + (getModValue(partAttr, 'speed') * slot.number), 0)
-					result.int = Math.max(1 + (getModValue(partAttr, 'int') * slot.number), 0)
+					result.force += getModValue(partAttr, 'force') * slot.number
+					result.ammo += getModValue(partAttr, 'ammo') * slot.number
+					result.range += getModValue(partAttr, 'range') * slot.number
+					result.speed += getModValue(partAttr, 'speed') * slot.number
+					result.int += getModValue(partAttr, 'int') * slot.number
 				}
 			}
 		})

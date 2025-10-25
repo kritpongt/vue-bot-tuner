@@ -1,5 +1,5 @@
 import { reactive, toRef, computed } from 'vue'
-import type { Part, WeaponPartType } from '@/types/part'
+import { type Part, isPartType, isWeaponPartType } from '@/types/part'
 
 const PARTS_URL = 'https://raw.githubusercontent.com/kritpongt/data_tune_up_parts/refs/heads/main/parts.json'
 
@@ -34,12 +34,12 @@ const fetchParts = async () => {
 
 export function useParts(){
 	const partTypes = computed(() => {
-		return Array.from(new Set(state.data.map(part => part.type).filter(Boolean))) || []
+		return Array.from(new Set(state.data.map(part => part.type).filter(isPartType))) || []
 	})
 
-	// const weaponPartTypes = computed(() => {
-	// 	return Array.from(new Set(state.data.map(part => part.type).filter(Boo))) || []
-	// })
+	const weaponPartTypes = computed(() => {
+		return Array.from(new Set(state.data.map(part => part.type).filter(isWeaponPartType))) || []
+	})
 
 	const partsByType = computed(() => {
 		const map = new Map<string, string[]>()
@@ -61,6 +61,7 @@ export function useParts(){
 		err: toRef(state, 'err'),
 		parts: toRef(state, 'data'),
 		partTypes,
+		weaponPartTypes,
 		partsByType
 	}
 }

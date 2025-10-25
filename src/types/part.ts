@@ -24,6 +24,27 @@ export interface Part{
 	cost: number
 }
 
+export function isPartType(value: string){
+	return (
+		value === 'HP' ||
+		value === 'TGH' ||
+		value === 'STR' ||
+		value === 'TEC' ||
+		value === 'WLK' ||
+		value === 'FLY' ||
+		value === 'OTHER' ||
+		value === 'STR&TEC' ||
+		value === 'WLK&FLY'
+	)
+}
+
+export function isWeaponPartType(value: string){
+	return (
+		value === 'MAIN' ||
+		value === 'SUB'
+	)
+}
+
 export function hasModifier(part: Part, key: keyof PartModifier){
 	return part.mod !== undefined && part.mod[key] !== undefined
 }
