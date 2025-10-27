@@ -9,8 +9,8 @@ interface PartsCardProps{
 	selectWeaponType?: string
 }
 interface PartsCardEmits{
-	addSlot: []
-	removeSlot: [id: number]
+	addRow: []
+	removeRow: [id: number]
 }
 
 const props = defineProps<PartsCardProps>()
@@ -18,8 +18,8 @@ const emit = defineEmits<PartsCardEmits>()
 
 const childSlots = defineModel<Slot[]>('slots', { required: true })
 
-const handleAddSlot = () => { emit('addSlot') }
-// const handleRemoveSlot = (id: number) => { emit('removeSlot', id) }
+const handleAddRow = () => { emit('addRow') }
+// const handleRemoveRow = (id: number) => { emit('removeRow', id) }
 
 watch([() => props.selectWeaponType, () => childSlots.value.length], ([newType, newLength], [oldType, oldLength]) => {
   if(newType && (newType !== oldType || newLength >= oldLength)){
@@ -33,7 +33,7 @@ watch([() => props.selectWeaponType, () => childSlots.value.length], ([newType, 
 <template>
 	<div class="card w-full bg-base-100 shadow-md card-border relative" :class="props.customClass">
 		<div class="card-body h-full">
-			<button class="btn btn-sm btn-neutral btn-dash w-min absolute right-2 -top-1 text-lg" @click="handleAddSlot">+</button>
+			<button class="btn btn-sm btn-neutral btn-dash w-min absolute right-2 -top-1 text-lg" @click="handleAddRow">+</button>
 			<div class="overflow-auto">
 				<table class="table table-xs min-w-max whitespace-nowrap">
 					<thead>

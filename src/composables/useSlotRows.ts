@@ -23,7 +23,7 @@ export function useSlotRows(initSlots: number = 3){
 		return Math.max(...slots.map((slots) => slots.id)) + 1
 	})
 
-	const addSlot = () => {
+	const addRow = () => {
 		slots.push({
 			id: nextId.value,
 			type: '',
@@ -32,7 +32,7 @@ export function useSlotRows(initSlots: number = 3){
 		})
 	}
 
-	const removeSlot = (id: number) => {
+	const removeRow = (id: number) => {
 		if(slots.length <= 1){ return false }
 
 		const index = slots.findIndex((slot) => slot.id === id)
@@ -118,7 +118,7 @@ export function useSlotRows(initSlots: number = 3){
 		slots,
 		totalPartStats,
 		totalPartMods,
-		addSlot,
-		removeSlot
+		addRow,
+		removeRow
 	}
 }

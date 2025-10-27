@@ -11,7 +11,7 @@ import PartsCard from '@/components/PartsCard.vue'
 import WeaponCard from '@/components/WeaponCard.vue'
 
 const { partTypes, weaponPartTypes, partsByType, fetchParts } = useParts()
-const { slots, totalPartStats, addSlot, removeSlot } = useSlotRows(5)
+const { slots, totalPartStats, addRow, removeRow } = useSlotRows(5)
 const { baseStats, liveStats } = useStats(totalPartStats)
 const { weapons, weaponsLiveAttr, addWeapon, updateBaseAttr, updateWeaponType } = useWeapons()
 
@@ -36,8 +36,8 @@ onMounted(() => { fetchParts() })
 				:partTypes="partTypes"
 				:partsByType="partsByType"
 				v-model:slots="slots"
-				@addSlot="addSlot"
-				@removeSlot="(id) => { removeSlot(id) }"
+				@addRow="addRow"
+				@removeRow="(id) => { removeRow(id) }"
 			/>
 		</div>
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
@@ -60,8 +60,8 @@ onMounted(() => { fetchParts() })
 						:partTypes="weaponPartTypes"
 						:partsByType="partsByType"
 						v-model:slots="weapon.slotRows.slots"
-						@addSlot="weapon.slotRows.addSlot"
-						@removeSlot="(id) => weapon.slotRows.removeSlot(id)"
+						@addRow="weapon.slotRows.addRow"
+						@removeRow="(id) => weapon.slotRows.removeRow(id)"
 					/>
 				</div>
 			</template>
