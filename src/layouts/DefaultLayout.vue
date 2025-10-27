@@ -1,7 +1,7 @@
 <script lang="ts"></script>
 
 <template>
-	<div class="">
+	<div class="bg-cover bg-fixed bg-[url(/bg/resort_festival.jpg)]">
 		<div class="navbar bg-base-100 shadow-sm">
 			<div class="flex-none">
 				<!-- <button class="btn btn-square btn-ghost">
@@ -25,8 +25,8 @@
 		<div class="w-full px-4 pt-12 xl:px-20 2xl:px-60">
 			<slot></slot>
 		</div>
-		<div class="h-20"></div>
 
+		<div class="h-20"></div>
 		<footer class="footer sm:footer-horizontal footer-center bg-base-300 text-base-content p-4">
 			<aside>
 				<p>Copyright © 2025 - All right reserved by Someone Ltd</p>

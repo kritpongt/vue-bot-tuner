@@ -1,2 +1,13 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+.text-outline-white {
+  text-shadow:
+    0 0 2px white,
+    0 0 4px white,
+    -1px -1px 0 white,
+     1px -1px 0 white,
+    -1px 1px 0 white,
+     1px 1px 0 white,
+     0 0 4px white;
+}

@@ -41,7 +41,7 @@ const formatSigned = (value: number = 0) => {
 			<input class="btn btn-xs" type="radio" :name="`filter-${props.title}`" aria-label="SUB" value="SUB" v-model="childSelected"/>
 		</div>
 		<button class="btn btn-sm btn-neutral btn-dash w-min absolute right-2 -top-8 text-lg" @click="handleAddWeapon">+</button>
-		<legend class="fieldset-legend text-xl font-bold">{{ props.title }}</legend>
+		<legend class="fieldset-legend text-xl font-bold text-outline-white">{{ props.title }}</legend>
 		<div class="overflow-x-auto mt-[-1rem]">
 			<table class="table table-xs w-full whitespace-nowrap">
 				<thead>
