@@ -21,13 +21,13 @@ const childSlots = defineModel<Slot[]>('slots', { required: true })
 const handleAddSlot = () => { emit('addSlot') }
 // const handleRemoveSlot = (id: number) => { emit('removeSlot', id) }
 
-watch([() => props.selectWeaponType], ([newType]) => {
-  if(newType){
+watch([() => props.selectWeaponType, () => childSlots.value.length], ([newType, newLength], [oldType, oldLength]) => {
+  if(newType && (newType !== oldType || newLength >= oldLength)){
     childSlots.value.forEach(slot => {
 			slot.type = newType !== 'ALL' ? newType : ''
     })
   }
-}, { deep: true })
+})
 </script>
 
 <template>
