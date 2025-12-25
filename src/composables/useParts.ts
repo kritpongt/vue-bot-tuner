@@ -1,5 +1,5 @@
 import { reactive, toRef, computed } from 'vue'
-import { type Part, isPartType, isWeaponPartType } from '@/types/part'
+import { Part } from '@/models/Part'
 
 const PARTS_URL = 'https://raw.githubusercontent.com/kritpongt/data_tune_up_parts/refs/heads/main/parts.json'
 
@@ -21,7 +21,11 @@ const fetchParts = async () => {
 		const res = await fetch(PARTS_URL)
 		if(!res.ok){ throw new Error(`HTTP error! status: ${res.status}`) }
 		const json = await res.json()
-		state.data = json || []
+		if(Array.isArray(json)){
+			state.data = json.map((p) => new Part(
+				p.type, p.partName, p.hp, p.str, p.tec, p.wlk, p.fly, p.tgh, p.cost, p.mod, p.proc
+			))
+		}
 
 	}catch(err){
 		const error = err instanceof Error ? err : new Error('Unknown error occurred')
@@ -34,11 +38,11 @@ const fetchParts = async () => {
 
 export function useParts(){
 	const partTypes = computed(() => {
-		return Array.from(new Set(state.data.map(part => part.type).filter(isPartType))) || []
+		return Array.from(new Set(state.data.map(part => part.type).filter((type) => Part.isPartType(type)))) || []
 	})
 
 	const weaponPartTypes = computed(() => {
-		return Array.from(new Set(state.data.map(part => part.type).filter(isWeaponPartType))) || []
+		return Array.from(new Set(state.data.map(part => part.type).filter((type) => Part.isWeaponPartType(type)))) || []
 	})
 
 	const partsByType = computed(() => {

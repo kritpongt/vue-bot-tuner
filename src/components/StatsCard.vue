@@ -1,24 +1,37 @@
 <script setup lang="ts">
-import type { Stats } from '@/types/stats'
+import { type EquipStat } from '@/models/Robot'
 
-interface StatsCardProps{
+type StatsCardProps = {
 	title: string
+	usedCapa?: number
+	maxCapa?: number
+	remainingSlots?: number
+	stats?: EquipStat
 	editable?: boolean
 }
+type StatsCardEmits = {
+	updateBaseStats: [key: keyof EquipStat, value: number]
+	updateCurrentCapa: [value: number]
+	updateMaxCapa: [value: number]
+	updateMaxSlots: [value: number]
+}
+
 const props = withDefaults(defineProps<StatsCardProps>(), {
 	editable: false
 })
+const emits = defineEmits<StatsCardEmits>()
 
-const childStats = defineModel<Stats>('stats', { required: true })
-
-const updateStat = (key: keyof Stats, value: number) => {
-	(childStats.value[key] as number) = value
+const handleUpdateCurrentCapa = (value: number) => {
+	emits('updateCurrentCapa', value)
 }
-const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
-	const stat = childStats.value[key]
-	if(typeof stat === 'object' && stat !== null){
-		stat[field as keyof typeof stat] = value
-	}
+const handleUpdateMaxCapa = (value: number) => {
+	emits('updateMaxCapa', value)
+}
+const handleUpdateMaxSlots = (value: number) => {
+	emits('updateMaxSlots', value)
+}
+const handleUpdateBaseStats = (key: keyof EquipStat, value: number) => {
+	emits('updateBaseStats', key, value)
 }
 </script>
 
@@ -45,25 +58,22 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 								<div class="text-center">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
-										:value="childStats.capa.current"
-										@input="updateObjectStat('capa', 'current', +($event.target as HTMLInputElement).value)" /> /
+										@input="handleUpdateCurrentCapa(+($event.target as HTMLInputElement).value)" /> /
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
-										:value="childStats.capa.max"
-										@input="updateObjectStat('capa', 'max', +($event.target as HTMLInputElement).value)" />
+										@input="handleUpdateMaxCapa(+($event.target as HTMLInputElement).value)" />
 								</div>
 							</td>
-							<td v-else><div class="text-center text-2xl">{{ childStats.capa.current }} / {{ childStats.capa.max }}</div></td>
+							<td v-else><div class="text-center text-2xl">{{ usedCapa }} / {{ maxCapa }}</div></td>
 							<th>STR</th>
 							<td v-if="props.editable">
 								<div class="text-right">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
-										:value="childStats.str"
-										@input="updateStat('str', +($event.target as HTMLInputElement).value)" />
+										@input="handleUpdateBaseStats('str', +($event.target as HTMLInputElement).value)" />
 								</div>
 							</td>
-							<td v-else><div class="text-center text-2xl">{{ childStats.str }}</div></td>
+							<td v-else><div class="text-center text-2xl">{{ props.stats?.str }}</div></td>
 						</tr>
 						<tr>
 							<th>HP</th>
@@ -71,21 +81,19 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 								<div class="text-center">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
-										:value="childStats.hp"
-										@input="updateStat('hp', +($event.target as HTMLInputElement).value)" />
+										@input="handleUpdateBaseStats('hp', +($event.target as HTMLInputElement).value)" />
 								</div>
 							</td>
-							<td v-else><div class="text-center text-2xl">{{ childStats.hp}}</div></td>
+							<td v-else><div class="text-center text-2xl">{{ props.stats?.hp}}</div></td>
 							<th>TEC</th>
 							<td v-if="props.editable">
 								<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
 									type="number"
-									:value="childStats.tec"
-									@input="updateStat('tec', +($event.target as HTMLInputElement).value)" />
+									@input="handleUpdateBaseStats('tec', +($event.target as HTMLInputElement).value)" />
 								</div>
 							</td>
-							<td v-else><div class="text-center text-2xl">{{ childStats.tec }}</div></td>
+							<td v-else><div class="text-center text-2xl">{{ props.stats?.tec }}</div></td>
 						</tr>
 						<tr>
 							<th>Slots</th>
@@ -93,21 +101,19 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 								<div class="text-center">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
-										:value="childStats.slots"
-										@input="updateStat('slots', +($event.target as HTMLInputElement).value)" />
+										@input="handleUpdateMaxSlots(+($event.target as HTMLInputElement).value)"/>
 								</div>
 							</td>
-							<td v-else><div class="text-center text-2xl">{{ childStats.slots }}</div></td>
+							<td v-else><div class="text-center text-2xl">{{ props.remainingSlots }}</div></td>
 							<th>WLK</th>
 							<td v-if="props.editable">
 								<div class="text-right">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
-										:value="childStats.wlk"
-										@input="updateStat('wlk', +($event.target as HTMLInputElement).value)" />
+										@input="handleUpdateBaseStats('wlk', +($event.target as HTMLInputElement).value)" />
 								</div>
 							</td>
-							<td v-else><div class="text-center text-2xl">{{ childStats.wlk }}</div></td>
+							<td v-else><div class="text-center text-2xl">{{ props.stats?.wlk }}</div></td>
 						</tr>
 						<tr>
 							<th></th>
@@ -117,11 +123,10 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 								<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
 									type="number"
-									:value="childStats.fly"
-									@input="updateStat('fly', +($event.target as HTMLInputElement).value)" />
+									@input="handleUpdateBaseStats('fly', +($event.target as HTMLInputElement).value)" />
 								</div>
 							</td>
-							<td v-else><div class="text-center text-2xl">{{ childStats.fly }}</div></td>
+							<td v-else><div class="text-center text-2xl">{{ props.stats?.fly }}</div></td>
 						</tr>
 						<tr>
 							<th></th>
@@ -131,11 +136,10 @@ const updateObjectStat = (key: keyof Stats, field: string, value: number) => {
 								<div class="text-right">
 									<input class="input input-sm max-w-[5rem] text-center"
 										type="number"
-										:value="childStats.tgh"
-										@input="updateStat('tgh', +($event.target as HTMLInputElement).value)" />
+										@input="handleUpdateBaseStats('tgh', +($event.target as HTMLInputElement).value)" />
 								</div>
 							</td>
-							<td v-else><div class="text-center text-2xl">{{ childStats.tgh }}</div></td>
+							<td v-else><div class="text-center text-2xl">{{ props.stats?.tgh }}</div></td>
 						</tr>
 					</tbody>
 				</table>

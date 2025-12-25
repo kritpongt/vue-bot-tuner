@@ -1,5 +1,6 @@
 import { ref, reactive, shallowReactive, computed, unref, type Reactive, type Ref } from 'vue'
 import type { Weapon } from "@/types/weapon"
+import { Robot } from '@/models/Robot'
 import { useSlotRows } from '@/composables/useSlotRows'
 
 interface WeaponInstance{
@@ -9,13 +10,13 @@ interface WeaponInstance{
 	slotRows: ReturnType<typeof useSlotRows>
 }
 
-export function useWeapons(){
+export function useWeapons(robot: Ref<Robot>){
 	const weaponInstances = shallowReactive<WeaponInstance[]>([
 		{
 			id: 0,
 			weaponType: ref('ALL'),
 			baseAttr: reactive({ force: 0, ammo: 0, range: 0, speed: 0, int: 0 }),
-			slotRows: useSlotRows(3)
+			slotRows: useSlotRows(robot, 3)
 		}
 	])
 
@@ -29,7 +30,7 @@ export function useWeapons(){
 			id: nextId.value,
 			weaponType: ref('ALL'),
 			baseAttr: reactive({ force: 0, ammo: 0, range: 0, speed: 0, int: 0 }),
-			slotRows: useSlotRows(3)
+			slotRows: useSlotRows(robot, 3)
 		})
 	}
 
@@ -44,11 +45,12 @@ export function useWeapons(){
 
 	const weaponsLiveAttr = computed(() => {
 		return weaponInstances.map((w) => {
-			const modifier = unref(w.slotRows.totalPartMods)
+			// const modifier = unref(w.slotRows.totalPartMods)
 
 			const liveAttr1 = Object.fromEntries(
 				Object.entries(w.baseAttr).map(([key, value]) => {
-					return [key, Math.ceil(value * modifier[key as keyof Weapon])]
+					// return [key, Math.ceil(value * modifier[key as keyof Weapon])]
+					return [key, Math.ceil(value * 1)]
 				})
 			)
 

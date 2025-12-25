@@ -1,33 +1,47 @@
-import { computed, reactive, type Ref } from 'vue'
-import type { Stats } from '@/types/stats'
+import { type Ref, computed } from 'vue'
+import { type EquipStat, Robot } from '@/models/Robot'
 
-export function useStats(partStats: Ref<Stats>){
-	const baseStats = reactive<Stats>({
-		capa: { current: 0, max: 0 },
-		hp: 0,
-		slots: 0,
-		str: 0,
-		tec: 0,
-		wlk: 0,
-		fly: 0,
-		tgh: 0
+export function useStats(robot: Ref<Robot>){
+	const usedCapa = computed(() => {
+		return robot.value.usedCapa
 	})
 
-	const liveStats = computed(() => {
-		return {
-			capa: { current: (baseStats.capa.current + partStats.value.capa.current), max: baseStats.capa.max },
-			hp: baseStats.hp + partStats.value.hp,
-			str: baseStats.str + partStats.value.str,
-			tec: baseStats.tec + partStats.value.tec,
-			wlk: baseStats.wlk + partStats.value.wlk,
-			fly: baseStats.fly + partStats.value.fly,
-			tgh: baseStats.tgh + partStats.value.tgh,
-			slots: baseStats.slots - partStats.value.slots
-		}
+	const maxCapa = computed(() => {
+		return robot.value.maxCapa
 	})
+
+	const remainingSlots = computed(() => {
+		return robot.value.remainingSlots
+	})
+
+	const totalStats = computed(() => {
+		return robot.value.totalStats
+	})
+
+	const updateCurrentCapa = (value: number) => {
+		robot.value.currentCapa = value
+	}
+
+	const updateMaxCapa = (value: number) => {
+		robot.value.maxCapa = value
+	}
+
+	const updateMaxSlots = (value: number) => {
+		robot.value.maxSlots = value
+	}
+
+	const updateBaseStat = (key: keyof EquipStat, value: number) => {
+		robot.value.baseStats[key] = value
+	}
 
 	return{
-		baseStats,
-		liveStats
+		usedCapa,
+		maxCapa,
+		remainingSlots,
+		totalStats,
+		updateBaseStat,
+		updateCurrentCapa,
+		updateMaxCapa,
+		updateMaxSlots
 	}
 }
