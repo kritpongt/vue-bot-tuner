@@ -15,29 +15,11 @@ type PartsCardEmits = {
 	removeRow: [id: number]
 	updateRow: [id: number, update: UpdateRow]
 }
-
 const props = defineProps<PartsCardProps>()
 const emit = defineEmits<PartsCardEmits>()
 
-// const slots = defineModel<Slot[]>('slots', { required: true })
-// const rows = defineModel<Slot[]>('slots', { required: true })
-
 const handleAddRow = () => { emit('addRow') }
 const handleUpdateRow = (id: number, update: UpdateRow) => { emit('updateRow', id, update) }
-// const handleRemoveRow = (id: number) => { emit('removeRow', id) }
-
-// const updateType = (id: number, event: Event) => {
-// 	const value = (event.target as HTMLSelectElement).value
-// 	emit('updateRow', id, { type: value })
-// }
-// const updatePartName = (id: number, event: Event) => {
-// 	const value = (event.target as HTMLSelectElement).value
-// 	emit('updateRow', id, { partName: value })
-// }
-// const updateQuantity = (id: number, event: Event) => {
-// 	const value = Number((event.target as HTMLInputElement).value)
-// 	emit('updateRow', id, { quantity: value })
-// }
 
 watch([() => props.selectWeaponType, () => props.partRows.length], ([newType, newLength], [oldType, oldLength]) => {
   if(newType && (newType !== oldType || newLength >= oldLength)){
@@ -46,9 +28,6 @@ watch([() => props.selectWeaponType, () => props.partRows.length], ([newType, ne
     })
   }
 })
-// watch((() => props.partRows), (newValue) => {
-// 	console.log(newValue)
-// }, {immediate: true, deep: true})
 </script>
 
 <template>

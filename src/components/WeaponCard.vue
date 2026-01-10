@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { Weapon } from '@/types/weapon'
+import type { WeaponStat } from '@/models/Weapon'
 
 interface WeaponCardProps{
 	title: string
@@ -9,7 +9,7 @@ interface WeaponCardProps{
 }
 interface WeaponCardEmits{
 	addWeapon: []
-	updateBaseAttr: [attr: Partial<Weapon>]
+	updateBaseAttr: [attr: Partial<WeaponStat>]
 	updateWeaponType: [type: string]
 }
 
@@ -19,11 +19,11 @@ const emit = defineEmits<WeaponCardEmits>()
 const handleAddWeapon = () => {
 	emit('addWeapon')
 }
-const handleUpdateBaseAttr = (key: keyof Weapon, value: number) => {
+const handleUpdateBaseAttr = (key: keyof WeaponStat, value: number) => {
 	emit('updateBaseAttr', { [key]: value })
 }
-const childSelected = ref<string>('ALL')
-watch(childSelected, (newType) => {
+const typeSelected = ref<string>('ALL')
+watch(typeSelected, (newType) => {
 	emit('updateWeaponType', newType)
 })
 
@@ -35,10 +35,10 @@ const formatSigned = (value: number = 0) => {
 
 <template>
 	<fieldset class="fieldset bg-base-100 rounded-box card-border shadow-md p-[1.5rem] w-full md:w-[30rem] relative">
-		<div class="filter absolute left-32 -top-7">
-			<input class="btn btn-xs filter-reset" type="radio" :name="`filter-${props.title}`" aria-label="All" value="ALL" v-model="childSelected"/>
-			<input class="btn btn-xs" type="radio" :name="`filter-${props.title}`" aria-label="MAIN" value="MAIN" v-model="childSelected"/>
-			<input class="btn btn-xs" type="radio" :name="`filter-${props.title}`" aria-label="SUB" value="SUB" v-model="childSelected"/>
+		<div class="filter absolute left-37 -top-7">
+			<input class="btn btn-xs filter-reset" type="radio" :name="`filter-${props.title}`" aria-label="All" value="ALL" v-model="typeSelected"/>
+			<input class="btn btn-xs" type="radio" :name="`filter-${props.title}`" aria-label="MAIN" value="MAIN" v-model="typeSelected"/>
+			<input class="btn btn-xs" type="radio" :name="`filter-${props.title}`" aria-label="SUB" value="SUB" v-model="typeSelected"/>
 		</div>
 		<button class="btn btn-sm btn-neutral btn-dash w-min absolute right-2 -top-8 text-lg" @click="handleAddWeapon">+</button>
 		<legend class="fieldset-legend text-xl font-bold text-outline-white">{{ props.title }}</legend>

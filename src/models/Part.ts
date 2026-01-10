@@ -1,7 +1,7 @@
 export type PartType = 'HP' | 'TGH' | 'STR' | 'TEC' | 'WLK' | 'FLY' | 'OTHER' | 'STR&TEC' | 'WLK&FLY'
 export type WeaponPartType = 'MAIN' | 'SUB'
 
-export type PartModifier = {
+export type ModifierStat = {
 	force: number
 	ammo: number
 	range: number
@@ -19,7 +19,7 @@ export interface IPart{
 	fly: number
 	tgh: number
 	cost: number
-	mod?: Partial<PartModifier>
+	mod?: Partial<ModifierStat>
 	proc?: Record<string, number>
 }
 
@@ -34,7 +34,7 @@ export class Part implements IPart{
 		public fly: number,
 		public tgh: number,
 		public cost: number,
-		public mod?: Partial<PartModifier>,
+		public mod?: Partial<ModifierStat>,
 		public proc?: Record<string, number>
 	){}
 
@@ -49,7 +49,7 @@ export class Part implements IPart{
 		return this.weaponPartTypes.includes(type)
 	}
 
-	getModValue(key: keyof PartModifier, defaultValue: number = 0): number{
+	getModValue(key: keyof ModifierStat, defaultValue: number = 0): number{
 		return this.mod?.[key] ?? defaultValue
 	}
 }

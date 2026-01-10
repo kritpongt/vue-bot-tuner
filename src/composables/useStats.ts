@@ -1,9 +1,9 @@
 import { type Ref, computed } from 'vue'
 import { type EquipStat, Robot } from '@/models/Robot'
 
-export function useStats(robot: Ref<Robot>){
+export function useStats(robot: Ref<Robot>) {
 	const usedCapa = computed(() => {
-		return robot.value.usedCapa
+		return robot.value.totalCapa
 	})
 
 	const maxCapa = computed(() => {
@@ -34,7 +34,7 @@ export function useStats(robot: Ref<Robot>){
 		robot.value.baseStats[key] = value
 	}
 
-	return{
+	return {
 		usedCapa,
 		maxCapa,
 		remainingSlots,

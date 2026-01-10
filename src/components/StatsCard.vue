@@ -15,10 +15,7 @@ type StatsCardEmits = {
 	updateMaxCapa: [value: number]
 	updateMaxSlots: [value: number]
 }
-
-const props = withDefaults(defineProps<StatsCardProps>(), {
-	editable: false
-})
+const props = withDefaults(defineProps<StatsCardProps>(), { editable: false })
 const emits = defineEmits<StatsCardEmits>()
 
 const handleUpdateCurrentCapa = (value: number) => {

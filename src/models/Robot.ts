@@ -1,5 +1,5 @@
-import { SlotRow } from "@/models/SlotRow"
-import { Weapon } from "@/models/Weapon"
+import { WithPartRows } from "@/models/WithPartRows"
+import { WeaponsHandler } from "@/models/WeaponsHandler"
 
 export type EquipStat = {
 	hp: number
@@ -10,40 +10,43 @@ export type EquipStat = {
 	tgh: number
 }
 
-export class Robot{
-	private _slotRows: SlotRow[] = []
-	private _weapons: Weapon[] = []
+export class Robot extends WithPartRows{
+	private _weapons: WeaponsHandler = new WeaponsHandler()
 
 	constructor(
-		public id: string,
+		private readonly _id: string,
 		public name: string,
 		public currentCapa: number,
 		public maxCapa: number,
 		public maxSlots: number,
 		public baseStats: EquipStat,
-	){}
-
-	get slotRows(): SlotRow[]{
-		return this._slotRows
+		public initRows: number = 4,
+		public initWeapons: number = 1
+	){
+		super()
+		this.addSlotRows(initRows)
+		this._weapons.addWeapons(initWeapons)
 	}
 
-	get weapons(): Weapon[]{
+	get id(){
+		return this._id
+	}
+
+	get weapons(){
 		return this._weapons
 	}
 
-	get usedCapa(){
-		const sum = this._slotRows.reduce((sum, row) => sum + (row.part ? row.part.cost * (row.quantity ?? 0) : 0), 0)
-		return this.currentCapa + sum
+	get totalCapa(): number{
+		return this.currentCapa + (this.usedCapa + this._weapons.totalUsedCapa)
 	}
 
-	get remainingSlots(){
-		const sum = this._slotRows.reduce((sum, row) => sum + (row.part ? (row.quantity ?? 0) : 0), 0)
-		return this.maxSlots - sum
+	get remainingSlots(): number{
+		return this.maxSlots - (this.usedSlot + this._weapons.totalUsedSlot)
 	}
 
 	get totalStats(): EquipStat{
 		const partStats = this._slotRows.reduce((acc, row) => {
-			if(!row.part && row.quantity <= 0){ return acc }
+			if(!row.part || row.quantity <= 0){ return acc }
 			return{
 				hp: acc.hp + ((row.part?.hp ?? 0) * row.quantity),
 				str: acc.str + ((row.part?.str ?? 0) * row.quantity),
@@ -60,34 +63,7 @@ export class Robot{
 			tec: this.baseStats.tec + partStats.tec,
 			wlk: this.baseStats.wlk + partStats.wlk,
 			fly: this.baseStats.fly + partStats.fly,
-			tgh: this.baseStats.tgh + partStats.tgh,
+			tgh: this.baseStats.tgh + partStats.tgh
 		}
-	}
-
-	addSlotRow(row: SlotRow){
-		this._slotRows.push(row)
-	}
-
-	addSlotRows(rowCount: number){
-		for(let id = 0; id < rowCount; id++){
-			const row = new SlotRow(id, '', '', 0)
-			this._slotRows.push(row)
-		}
-	}
-
-	removeSlotRow(id: number){
-		const index = this._slotRows.findIndex((r) => r.id === id)
-		if(index === -1){ return false }
-
-		this._slotRows.splice(index, 1)
-		return true
-	}
-
-	updateSlotRow(id: number, update: Partial<SlotRow>){
-		const row = this._slotRows.find((r) => r.id === id)
-		if(!row){ return false }
-
-		Object.assign(row, update)
-		return true
 	}
 }

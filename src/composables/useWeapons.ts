@@ -1,80 +1,64 @@
-import { ref, reactive, shallowReactive, computed, unref, type Reactive, type Ref } from 'vue'
-import type { Weapon } from "@/types/weapon"
+import { shallowReactive, computed, type Ref, watch } from 'vue'
+import type { WeaponStat } from '@/models/Weapon'
 import { Robot } from '@/models/Robot'
-import { useSlotRows } from '@/composables/useSlotRows'
-
-interface WeaponInstance{
-	id: number
-	weaponType: Ref<string>
-	baseAttr: Reactive<Weapon>
-	slotRows: ReturnType<typeof useSlotRows>
-}
+import { useWeaponPartRows } from '@/composables/useWeaponPartRows'
 
 export function useWeapons(robot: Ref<Robot>){
-	const weaponInstances = shallowReactive<WeaponInstance[]>([
-		{
-			id: 0,
-			weaponType: ref('ALL'),
-			baseAttr: reactive({ force: 0, ammo: 0, range: 0, speed: 0, int: 0 }),
-			slotRows: useSlotRows(robot, 3)
-		}
-	])
+	const weaponInstance = shallowReactive<Map<number, ReturnType<typeof useWeaponPartRows>>>(new Map())
 
-	const nextId = computed(() => {
-		if(weaponInstances.length === 0){ return 0 }
-		return Math.max(...weaponInstances.map((weapon) => weapon.id)) + 1
+	watch(() => robot.value.id, () => {
+		weaponInstance.clear()
+	})
+
+	const getWeaponPartRows = (index: number) => {
+		if(!weaponInstance.has(index)){
+			weaponInstance.set(index, useWeaponPartRows(robot, index))
+		}
+		return weaponInstance.get(index) as ReturnType<typeof useWeaponPartRows>
+	}
+
+	const weapons = computed(() => {
+		return robot.value.weapons.weaponList.map((row) => ({
+			id: row.id,
+			weaponType: row.weaponType,
+			baseAttr: row.baseStats,
+			totalStat: row.totalStats,
+			slotRows: getWeaponPartRows(row.id)
+		}))
 	})
 
 	const addWeapon = () => {
-		weaponInstances.push({
-			id: nextId.value,
-			weaponType: ref('ALL'),
-			baseAttr: reactive({ force: 0, ammo: 0, range: 0, speed: 0, int: 0 }),
-			slotRows: useSlotRows(robot, 3)
-		})
+		robot.value.weapons.addWeapons(1)
 	}
 
-	const removeWeapon = () => {
-
+	const removeWeapon = (id: number) => {
+		robot.value.weapons.removeWeapon(id)
 	}
 
-	const updateBaseAttr = (weaponId: number, attr: Partial<Weapon>) => {
-		const weapon = weaponInstances.find((w) => w.id === weaponId)
-		if(weapon){ Object.assign(weapon.baseAttr, attr) }
+	const updateBaseAttr = (weaponId: number, attr: Partial<WeaponStat>) => {
+		const weapon = weapons.value.find((w) => w.id === weaponId)
+		if(weapon){ robot.value.weapons.weaponList[weaponId]?.updateBaseStats(attr) }
+	}
+
+	const updateWeaponType = (weaponId: number, type: string) => {
+		const weapon = weapons.value.find((w) => w.id === weaponId)
+		if(weapon){ robot.value.weapons.weaponList[weaponId]?.updateWeaponType(type) }
 	}
 
 	const weaponsLiveAttr = computed(() => {
-		return weaponInstances.map((w) => {
-			// const modifier = unref(w.slotRows.totalPartMods)
-
-			const liveAttr1 = Object.fromEntries(
-				Object.entries(w.baseAttr).map(([key, value]) => {
-					// return [key, Math.ceil(value * modifier[key as keyof Weapon])]
-					return [key, Math.ceil(value * 1)]
-				})
-			)
-
+		return weapons.value.map((weapon) => {
+			const liveAttr1 = weapon.totalStat
 			const liveAttr2 = Object.fromEntries(
-				Object.entries(liveAttr1).map(([key, value]) => {
-					return [key, w.baseAttr[key as keyof Weapon] + value]
+				Object.entries(weapon.totalStat).map(([key, value]) => {
+					return [key, weapon.baseAttr[key as keyof WeaponStat] + Math.ceil(value)]
 				})
 			)
-
-			return {
-				id: w.id,
-				liveAttr1,
-				liveAttr2
-			}
+			return { id: weapon.id, liveAttr1, liveAttr2 }
 		})
 	})
 
-	const updateWeaponType = (weaponId: number, type: string) => {
-		const weapon = weaponInstances.find((w) => w.id === weaponId)
-		if(weapon){ weapon.weaponType.value = type }
-	}
-
 	return {
-		weapons: weaponInstances,
+		weapons,
 		weaponsLiveAttr,
 		addWeapon,
 		removeWeapon,

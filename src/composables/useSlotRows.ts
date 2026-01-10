@@ -1,9 +1,8 @@
-import { type Ref, ref, computed, unref, watch } from 'vue'
-import { Robot } from '@/models/Robot'
-import { SlotRow } from '@/models/SlotRow'
+import { type Ref, computed, unref } from 'vue'
 import { type IPart } from '@/models/Part'
-
+import { Robot } from '@/models/Robot'
 import { useParts } from '@/composables/useParts'
+
 const { parts } = useParts()
 
 export type Slot = {
@@ -18,23 +17,33 @@ export type UpdateRow = Partial<{
 	quantity: number
 }>
 
-export function useSlotRows(robot: Ref<Robot>, initRows: number = 3){
+export function useSlotRows(robot: Ref<Robot>){
+	// const rows = ref<Slot[]>([])
 
-	const rows = ref<Slot[]>([])
+	// watch(() => robot.value, (newRobot) => {
+	// 	if(newRobot.slotRows.length === 0){
+	// 		newRobot.addSlotRows(initRows)
+	// 	}
+	// }, { immediate: true, deep: true })
 
-	if(robot.value.slotRows.length === 0){
-		robot.value.addSlotRows(initRows)
-	}
+	// watch(() => robot.value.slotRows, (slotRows) => {
+	// 	// console.log(slotRows)
+	// 	rows.value = slotRows.map((row) => ({
+	// 		id: row.id,
+	// 		type: row.type,
+	// 		partName: row.partName,
+	// 		quantity: row.quantity === 0 ? null : row.quantity
+	// 	}))
+	// }, { immediate: true, deep: true })
 
-	watch(() => robot.value.slotRows, (slotRows) => {
-		// console.log(slotRows)
-		rows.value = slotRows.map(row => ({
+	const rows = computed(() => {
+    return robot.value.slotRows.map((row) => ({
 			id: row.id,
 			type: row.type,
 			partName: row.partName,
 			quantity: row.quantity === 0 ? null : row.quantity
-		}))
-	}, { immediate: true, deep: true })
+    }))
+	})
 
 	const partsLookup = computed(() => {
 		const map = new Map<string, IPart>()
@@ -49,14 +58,8 @@ export function useSlotRows(robot: Ref<Robot>, initRows: number = 3){
 		return map
 	})
 
-	const nextId = computed(() => {
-		if(robot.value.slotRows.length === 0){ return 0 }
-		return Math.max(...robot.value.slotRows.map((r) => r.id)) + 1
-	})
-
 	const addRow = () => {
-		const row = new SlotRow(nextId.value, '', '', 0)
-		return robot.value.addSlotRow(row)
+		return robot.value.addSlotRows(1)
 	}
 
 	const removeRow = (id: number) => {
@@ -70,10 +73,12 @@ export function useSlotRows(robot: Ref<Robot>, initRows: number = 3){
 		robot.value.updateSlotRow(id, update)
 
 		const row = slotRows.find((r) => r.id === id)
-		if(row && row.type !== '' && row.partName !== '' && (row.quantity ?? 0) > 0){
+		if(row && row.type !== '' && row.partName !== '' && row.quantity > 0){
 			const key = `${row.type}:${row.partName}`
 			const part = lookup.get(key)
 			robot.value.updateSlotRow(id, { part: part ?? null })
+		}else{
+			robot.value.updateSlotRow(id, { part: null })
 		}
 	}
 
