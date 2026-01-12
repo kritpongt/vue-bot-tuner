@@ -2,7 +2,7 @@
 import { computed, watch } from 'vue'
 import type { useRobotGarage } from '@/composables/useRobotGarage';
 import type { PartType, WeaponPartType } from '@/models/Part';
-import { useSlotRows } from '@/composables/useSlotRows'
+import { usePartRows } from '@/composables/usePartRows'
 import { useStats } from '@/composables/useStats'
 import { useWeapons } from '@/composables/useWeapons'
 
@@ -29,14 +29,15 @@ const robot = computed(() => {
 })
 
 const { usedCapa, maxCapa, remainingSlots, totalStats, updateBaseStat, updateCurrentCapa, updateMaxCapa, updateMaxSlots } = useStats(robot)
-const { slotRows, addRow, removeRow, updateRow } = useSlotRows(robot)
-const { weapons, weaponsLiveAttr, addWeapon, updateBaseAttr, updateWeaponType } = useWeapons(robot)
+const { rows, addRow, removeRow, updateRow } = usePartRows(robot)
+const { weapons, weaponsStats, addWeapon, updateWeaponBaseStat, updateWeaponType } = useWeapons(robot)
 
 const handleAddRobot = () => { emits('addRobot') }
 
-// watch(() => weapons, (val) => {
-// 	console.log(val.value)
-// }, { immediate: true, deep: true })
+// watch(() => props.robotGarage.robots.value, () => {
+// 	// console.log(val)
+// 	props.robotGarage.inputSave()
+// }, { deep: true })
 </script>
 
 <template>
@@ -48,35 +49,108 @@ const handleAddRobot = () => { emits('addRobot') }
 		<button class="btn btn-sm btn-neutral btn-dash w-min text-lg ml-2" @click="handleAddRobot">+</button>
 	</div>
 
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-		<div class="grid grid-cols-1 gap-4 md:justify-items-center">
-			<StatsCard
-				title="Stats"
-				:usedCapa="usedCapa"
-				:maxCapa="maxCapa"
-				:remainingSlots="remainingSlots"
-				:stats="totalStats"
-			/>
-			<StatsCard
-				title="Base stats"
-				:editable="true"
-				@updateBaseStats="(key, value) => { updateBaseStat(key, value) }"
-				@updateCurrentCapa="(value) => { updateCurrentCapa(value) }"
-				@updateMaxCapa="(value) => { updateMaxCapa(value) }"
-				@updateMaxSlots="(value) => { updateMaxSlots(value) }"
-			/>
+	<div class="flex flex-col items-center gap-4">
+		<div class="flex flex-col md:flex-row gap-4 w-full max-w-6xl">
+			<div class="flex flex-col gap-4 md:w-1/2">
+				<div class="flex">
+					<StatsCard
+						title="Stats"
+						:usedCapa="usedCapa"
+						:maxCapa="maxCapa"
+						:remainingSlots="remainingSlots"
+						:stats="totalStats"
+					/>
+				</div>
+				<div class="flex">
+					<StatsCard
+						title="Base Stats"
+						:editable="true"
+						:usedCapa="robot.currentCapa"
+						:maxCapa="robot.maxCapa"
+						:remainingSlots="robot.maxSlots"
+						:stats="robot.baseStats"
+						@updateBaseStat="(key, value) => { updateBaseStat(key, value) }"
+						@updateCurrentCapa="(value) => { updateCurrentCapa(value) }"
+						@updateMaxCapa="(value) => { updateMaxCapa(value) }"
+						@updateMaxSlots="(value) => { updateMaxSlots(value) }"
+						@inputSave="props.robotGarage.inputSave"
+					/>
+				</div>
+			</div>
+			<div class="md:w-1/2 pt-[1.4rem]">
+				<PartsCard :customClass="['max-h-[563px]']"
+					:partTypes="partTypes"
+					:partsByType="partsByType"
+					:partRows="rows"
+					@addRow="addRow"
+					@removeRow="(id) => { removeRow(id) }"
+					@updateRow="(id, update) => { updateRow(id, update) }"
+				/>
+			</div>
 		</div>
-		<PartsCard :customClass="['max-h-[614px]']"
-			:partTypes="partTypes"
-			:partsByType="partsByType"
-			:partRows="slotRows"
-			@addRow="addRow"
-			@removeRow="(id) => { removeRow(id) }"
-			@updateRow="(id, update) => { updateRow(id, update) }"
-		/>
-	</div>
+		<!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div class="grid grid-cols-1 gap-4 md:justify-items-center">
+				<StatsCard
+					title="Stats"
+					:usedCapa="usedCapa"
+					:maxCapa="maxCapa"
+					:remainingSlots="remainingSlots"
+					:stats="totalStats"
+				/>
+				<StatsCard
+					title="Base stats"
+					:editable="true"
+					@updateBaseStats="(key, value) => { updateBaseStat(key, value) }"
+					@updateCurrentCapa="(value) => { updateCurrentCapa(value) }"
+					@updateMaxCapa="(value) => { updateMaxCapa(value) }"
+					@updateMaxSlots="(value) => { updateMaxSlots(value) }"
+				/>
+			</div>
+			<PartsCard :customClass="['max-h-[614px]']"
+				:partTypes="partTypes"
+				:partsByType="partsByType"
+				:partRows="slotRows"
+				@addRow="addRow"
+				@removeRow="(id) => { removeRow(id) }"
+				@updateRow="(id, update) => { updateRow(id, update) }"
+			/>
+		</div> -->
 
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+		<div class="flex flex-col items-center gap-4 w-full max-w-6xl">
+			<template v-for="weapon in weapons" :key="weapon.id">
+				<div class="flex flex-col md:flex-row gap-4 w-full">
+					<div class="flex md:w-1/2">
+						<template v-if="weaponsStats[weapon.id]">
+							<WeaponCard
+								:title="`Weapon #${weapon.id + 1}`"
+								:weaponType="weapon.weaponType"
+								:liveAttr1="weaponsStats[weapon.id]?.stats_A ?? {}"
+								:liveAttr2="weaponsStats[weapon.id]?.stats_B ?? {}"
+								:baseStat="weapon.baseStat"
+								@addWeapon="addWeapon"
+								@updateWeaponBaseStat="(update) => { updateWeaponBaseStat(weapon.id, update) }"
+								@updateWeaponType="(type) => { updateWeaponType(weapon.id, type) }"
+								@inputSave="props.robotGarage.inputSave"
+							/>
+						</template>
+					</div>
+
+					<div class="md:w-1/2 pt-[1.4rem]">
+						<PartsCard :customClass="['max-h-[262px]']"
+							:selectWeaponType="weapon.weaponType"
+							:partTypes="weaponPartTypes"
+							:partsByType="partsByType"
+							:partRows="weapon.partRows.rows.value"
+							@addRow="weapon.partRows.addRow"
+							@removeRow="(id) => { weapon.partRows.removeRow(id) }"
+							@updateRow="(id, update) => { weapon.partRows.updateRow(id, update) }"
+						/>
+					</div>
+				</div>
+			</template>
+		</div>
+	</div>
+	<!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
 		<template v-for="weapon in weapons" :key="weapon.id">
 			<div class="justify-items-center">
 				<template v-if="weaponsLiveAttr[weapon.id]">
@@ -102,7 +176,7 @@ const handleAddRobot = () => { emits('addRobot') }
 				/>
 			</div>
 		</template>
-	</div>
+	</div> -->
 
 </template>
 

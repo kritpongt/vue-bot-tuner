@@ -10,18 +10,46 @@ export type WeaponStat = {
 }
 
 export class Weapon extends WithPartRows{
+	private _baseStats: WeaponStat
+
 	constructor(
 		private readonly _id: number,
 		public weaponType: string,
-		public baseStats: WeaponStat,
+		baseStats: WeaponStat,
 		public initRows: number = 3
 	){
 		super()
-		this.addSlotRows(initRows)
+		this._baseStats = { ...baseStats }
+		this.addPartRows(initRows)
 	}
 
 	get id(){
 		return this._id
+	}
+
+	get baseStats(): Readonly<WeaponStat>{
+		return { ...this._baseStats }
+	}
+
+	get totalStats(): WeaponStat{
+		const partStats = this._partRows.reduce((acc, row) => {
+			if(!row.part?.mod || row.quantity <= 0){ return acc }
+			const part = row.part.mod
+			const quantity = row.quantity
+			return {
+				force: acc.force + ((part.force ?? 0) * quantity),
+				ammo: acc.ammo + ((part.ammo ?? 0) * quantity),
+				range: acc.range + ((part.range ?? 0) * quantity),
+				speed: acc.speed + ((part.speed ?? 0) * quantity),
+				int: acc.int + ((part.int ?? 0) * quantity)
+			}
+		}, { force: 0, ammo: 0, range: 0, speed: 0, int: 0 })
+
+		return Object.fromEntries(
+			Object.entries(this._baseStats).map(([key, value]) => [
+				key, Math.round((value * partStats[key as keyof WeaponStat]) * 10000) / 10000
+			])
+		) as WeaponStat
 	}
 
 	getUsedCapa(): number{
@@ -35,31 +63,15 @@ export class Weapon extends WithPartRows{
 	updateWeaponType(type: string){
 		this.weaponType = type
 		if(!Part.weaponPartTypes.includes(type)){ type = '' }
-		this.updateAllSlotRows({ type: type })
+		this.updateAllPartRows({ type: type })
 	}
 
 	updateBaseStats(update: Partial<WeaponStat>){
-		Object.assign(this.baseStats, update)
-	}
-
-	get totalStats(): WeaponStat{
-		const partAttr = this._slotRows.reduce((acc, row) => {
-			if(!row.part || row.quantity <= 0){ return acc }
-			return {
-				force: acc.force + ((row.part?.mod?.force ?? 0) * row.quantity),
-				ammo: acc.ammo + ((row.part?.mod?.ammo ?? 0) * row.quantity),
-				range: acc.range + ((row.part?.mod?.range ?? 0) * row.quantity),
-				speed: acc.speed + ((row.part?.mod?.speed ?? 0) * row.quantity),
-				int: acc.int + ((row.part?.mod?.int ?? 0) * row.quantity)
+		for(const [key, value] of Object.entries(update)){
+			if(typeof value !== 'number' || isNaN(value)){
+				throw new Error(`Invalid value for ${key}: ${value}`)
 			}
-		}, { force: 0, ammo: 0, range: 0, speed: 0, int: 0 })
-
-		return {
-			force: Math.round((this.baseStats.force * partAttr.force) * 10000) / 10000,
-			ammo: Math.round((this.baseStats.ammo * partAttr.ammo) * 10000) / 10000,
-			range: Math.round((this.baseStats.range * partAttr.range) * 10000) / 10000,
-			speed: Math.round((this.baseStats.speed * partAttr.speed) * 10000) / 10000,
-			int: Math.round((this.baseStats.int * partAttr.int) * 10000) / 10000
 		}
+		Object.assign(this._baseStats, update)
 	}
 }

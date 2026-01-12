@@ -1,10 +1,11 @@
 import { Weapon, type WeaponStat } from '@/models/Weapon'
 
+const DEFAULT_TYPE: string = 'ALL'
+const DEFAULT_STATS: WeaponStat = { force: 0, ammo: 0, speed: 0, range: 0, int: 0 }
+
 export class WeaponsHandler{
 	private _weapons: Weapon[] = []
 	private _nextId: number = 0
-	private _defaultType: string = 'ALL'
-	private _defaultStats: WeaponStat = { force: 0, ammo: 0, speed: 0, range: 0, int: 0 }
 
 	get weaponList(): readonly Weapon[]{
 		return this._weapons
@@ -26,7 +27,7 @@ export class WeaponsHandler{
 		if(amount <= 0){ return }
 
 		for(let i = 0; i < amount; i++){
-			const row = new Weapon(this._nextId++, this._defaultType, this._defaultStats)
+			const row = new Weapon(this._nextId++, DEFAULT_TYPE, DEFAULT_STATS)
 			this._weapons.push(row)
 		}
 	}

@@ -1,5 +1,5 @@
 import { type Ref, computed, unref } from 'vue'
-import type { IPart } from '@/models/Part'
+import { type IPart } from '@/models/Part'
 import { Robot } from '@/models/Robot'
 import { useParts } from '@/composables/useParts'
 
@@ -17,29 +17,15 @@ export type UpdateRow = Partial<{
 	quantity: number
 }>
 
-export function useWeaponPartRows(robot: Ref<Robot>, weaponId: number){
-	const weaponList = computed(() => {
-		const weapon = robot.value.weapons.weaponList.find((w) => w.id === weaponId)
-		if(!weapon){ throw new Error(`Robot '${robot.value.name}' Weapon ${weaponId} not found`) }
-		return weapon
-	})
-
+export function usePartRows(robot: Ref<Robot>){
 	const rows = computed(() => {
-		return weaponList.value.partRows.map((row) => ({
+    return robot.value.partRows.map((row) => ({
 			id: row.id,
 			type: row.type,
 			partName: row.partName,
 			quantity: row.quantity === 0 ? null : row.quantity
-		}))
+    }))
 	})
-
-	const addRow = () => {
-		return weaponList.value.addPartRows(1)
-	}
-
-	const removeRow = (id: number) => {
-		return weaponList.value.removePartRow(id)
-	}
 
 	const partsLookup = computed(() => {
 		const map = new Map<string, IPart>()
@@ -54,18 +40,27 @@ export function useWeaponPartRows(robot: Ref<Robot>, weaponId: number){
 		return map
 	})
 
+	const addRow = () => {
+		return robot.value.addPartRows(1)
+	}
+
+	const removeRow = (id: number) => {
+		return robot.value.removePartRow(id)
+	}
+
 	const updateRow = (id: number, update: UpdateRow) => {
 		const lookup = partsLookup.value
-		const partRows = unref(weaponList.value.partRows)
-		weaponList.value.updatePartRow(id, update)
+		const partRows = unref(robot.value.partRows)
+
+		robot.value.updatePartRow(id, update)
 
 		const row = partRows.find((r) => r.id === id)
 		if(row && row.type !== '' && row.partName !== '' && row.quantity > 0){
 			const key = `${row.type}:${row.partName}`
 			const part = lookup.get(key)
-			weaponList.value.updatePartRow(id, { part: part ?? null })
+			robot.value.updatePartRow(id, { part: part ?? null })
 		}else{
-			weaponList.value.updatePartRow(id, { part: null })
+			robot.value.updatePartRow(id, { part: null })
 		}
 	}
 

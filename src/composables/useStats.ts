@@ -31,7 +31,7 @@ export function useStats(robot: Ref<Robot>) {
 	}
 
 	const updateBaseStat = (key: keyof EquipStat, value: number) => {
-		robot.value.baseStats[key] = value
+		robot.value.updateBaseStats({ [key]: value })
 	}
 
 	return {

@@ -21,9 +21,9 @@ export function useWeapons(robot: Ref<Robot>){
 		return robot.value.weapons.weaponList.map((row) => ({
 			id: row.id,
 			weaponType: row.weaponType,
-			baseAttr: row.baseStats,
+			baseStat: row.baseStats,
 			totalStat: row.totalStats,
-			slotRows: getWeaponPartRows(row.id)
+			partRows: getWeaponPartRows(row.id)
 		}))
 	})
 
@@ -35,9 +35,9 @@ export function useWeapons(robot: Ref<Robot>){
 		robot.value.weapons.removeWeapon(id)
 	}
 
-	const updateBaseAttr = (weaponId: number, attr: Partial<WeaponStat>) => {
+	const updateWeaponBaseStat = (weaponId: number, uppdate: Partial<WeaponStat>) => {
 		const weapon = weapons.value.find((w) => w.id === weaponId)
-		if(weapon){ robot.value.weapons.weaponList[weaponId]?.updateBaseStats(attr) }
+		if(weapon){ robot.value.weapons.weaponList[weaponId]?.updateBaseStats(uppdate) }
 	}
 
 	const updateWeaponType = (weaponId: number, type: string) => {
@@ -45,24 +45,24 @@ export function useWeapons(robot: Ref<Robot>){
 		if(weapon){ robot.value.weapons.weaponList[weaponId]?.updateWeaponType(type) }
 	}
 
-	const weaponsLiveAttr = computed(() => {
+	const weaponsStats = computed(() => {
 		return weapons.value.map((weapon) => {
-			const liveAttr1 = weapon.totalStat
-			const liveAttr2 = Object.fromEntries(
+			const stats_A = weapon.totalStat
+			const stats_B = Object.fromEntries(
 				Object.entries(weapon.totalStat).map(([key, value]) => {
-					return [key, weapon.baseAttr[key as keyof WeaponStat] + Math.ceil(value)]
+					return [key, weapon.baseStat[key as keyof WeaponStat] + Math.ceil(value)]
 				})
 			)
-			return { id: weapon.id, liveAttr1, liveAttr2 }
+			return { id: weapon.id, stats_A, stats_B }
 		})
 	})
 
 	return {
 		weapons,
-		weaponsLiveAttr,
+		weaponsStats,
 		addWeapon,
 		removeWeapon,
-		updateBaseAttr,
+		updateWeaponBaseStat,
 		updateWeaponType
 	}
 }

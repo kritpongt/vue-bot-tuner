@@ -12,6 +12,7 @@ export type EquipStat = {
 
 export class Robot extends WithPartRows{
 	private _weapons: WeaponsHandler = new WeaponsHandler()
+	private _baseStats: EquipStat
 
 	constructor(
 		private readonly _id: string,
@@ -19,12 +20,13 @@ export class Robot extends WithPartRows{
 		public currentCapa: number,
 		public maxCapa: number,
 		public maxSlots: number,
-		public baseStats: EquipStat,
-		public initRows: number = 4,
+		baseStats: EquipStat,
+		public initRows: number = 5,
 		public initWeapons: number = 1
 	){
 		super()
-		this.addSlotRows(initRows)
+		this._baseStats = { ...baseStats }
+		this.addPartRows(initRows)
 		this._weapons.addWeapons(initWeapons)
 	}
 
@@ -32,7 +34,11 @@ export class Robot extends WithPartRows{
 		return this._id
 	}
 
-	get weapons(){
+	get baseStats(): Readonly<EquipStat>{
+		return { ...this._baseStats }
+	}
+
+	get weapons(): Readonly<WeaponsHandler>{
 		return this._weapons
 	}
 
@@ -45,25 +51,33 @@ export class Robot extends WithPartRows{
 	}
 
 	get totalStats(): EquipStat{
-		const partStats = this._slotRows.reduce((acc, row) => {
+		const partStats = this._partRows.reduce((acc, row) => {
 			if(!row.part || row.quantity <= 0){ return acc }
+			const part = row.part
+			const quantity = row.quantity
 			return{
-				hp: acc.hp + ((row.part?.hp ?? 0) * row.quantity),
-				str: acc.str + ((row.part?.str ?? 0) * row.quantity),
-				tec: acc.tec + ((row.part?.tec ?? 0) * row.quantity),
-				wlk: acc.wlk + ((row.part?.wlk ?? 0) * row.quantity),
-				fly: acc.fly + ((row.part?.fly ?? 0) * row.quantity),
-				tgh: acc.tgh + ((row.part?.tgh ?? 0) * row.quantity)
+				hp: acc.hp + (part.hp * quantity),
+				str: acc.str + (part.str * quantity),
+				tec: acc.tec + (part.tec * quantity),
+				wlk: acc.wlk + (part.wlk * quantity),
+				fly: acc.fly + (part.fly * quantity),
+				tgh: acc.tgh + (part.tgh * quantity)
 			}
 		}, { hp: 0, str: 0, tec: 0, wlk: 0, fly: 0, tgh: 0 })
 
-		return{
-			hp: this.baseStats.hp + partStats.hp,
-			str: this.baseStats.str + partStats.str,
-			tec: this.baseStats.tec + partStats.tec,
-			wlk: this.baseStats.wlk + partStats.wlk,
-			fly: this.baseStats.fly + partStats.fly,
-			tgh: this.baseStats.tgh + partStats.tgh
+		return Object.fromEntries(
+			Object.entries(this._baseStats).map(([key, value]) => [
+				key, value + partStats[key as keyof EquipStat]
+			])
+		) as EquipStat
+	}
+
+	updateBaseStats(update: Partial<EquipStat>){
+		for(const [key, value] of Object.entries(update)){
+			if(typeof value !== 'number' || isNaN(value)){
+				throw new Error(`Invalid value for ${key}: ${value}`)
+			}
 		}
+		Object.assign(this._baseStats, update)
 	}
 }

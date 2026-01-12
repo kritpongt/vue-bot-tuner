@@ -1,35 +1,48 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed } from 'vue'
 import type { WeaponStat } from '@/models/Weapon'
 
 interface WeaponCardProps{
 	title: string
+	weaponType?: string
 	liveAttr1: Record<string, number>
 	liveAttr2: Record<string, number>
+	baseStat?: WeaponStat
 }
 interface WeaponCardEmits{
 	addWeapon: []
-	updateBaseAttr: [attr: Partial<WeaponStat>]
+	updateWeaponBaseStat: [attr: Partial<WeaponStat>]
 	updateWeaponType: [type: string]
+	inputSave: []
 }
 
 const props = defineProps<WeaponCardProps>()
-const emit = defineEmits<WeaponCardEmits>()
+const emits = defineEmits<WeaponCardEmits>()
 
 const handleAddWeapon = () => {
-	emit('addWeapon')
+	emits('addWeapon')
+	emits('inputSave')
 }
-const handleUpdateBaseAttr = (key: keyof WeaponStat, value: number) => {
-	emit('updateBaseAttr', { [key]: value })
+const handleUpdateBaseStat = (key: keyof WeaponStat, value: number) => {
+	emits('updateWeaponBaseStat', { [key]: value })
+	emits('inputSave')
 }
-const typeSelected = ref<string>('ALL')
-watch(typeSelected, (newType) => {
-	emit('updateWeaponType', newType)
+
+// const typeSelected = ref<string>('ALL')
+// watch(typeSelected, (newType) => {
+// 	emits('updateWeaponType', newType)
+// })
+const typeSelected = computed({
+	get: () => props.weaponType || 'ALL',
+	set: (value) => emits('updateWeaponType', value)
 })
 
 const formatSigned = (value: number = 0) => {
 	// return value.toLocaleString('en-US', { signDisplay: 'always' })
 	return value >= 0 ? `+${value}` : value
+}
+const formatInput = (value: number = 0) => {
+	return value === 0 ? '' : value
 }
 </script>
 
@@ -61,7 +74,8 @@ const formatSigned = (value: number = 0) => {
 							<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
 									type="number"
-									@input="handleUpdateBaseAttr('force', +($event.target as HTMLInputElement).value)" />
+									:value="formatInput(baseStat?.force)"
+									@input="handleUpdateBaseStat('force', +($event.target as HTMLInputElement).value)" />
 							</div>
 						</td>
 					</tr>
@@ -73,7 +87,8 @@ const formatSigned = (value: number = 0) => {
 							<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
 									type="number"
-									@input="handleUpdateBaseAttr('ammo', +($event.target as HTMLInputElement).value)" />
+									:value="formatInput(baseStat?.ammo)"
+									@input="handleUpdateBaseStat('ammo', +($event.target as HTMLInputElement).value)" />
 							</div>
 						</td>
 					</tr>
@@ -85,7 +100,8 @@ const formatSigned = (value: number = 0) => {
 							<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
 									type="number"
-									@input="handleUpdateBaseAttr('range', +($event.target as HTMLInputElement).value)" />
+									:value="formatInput(baseStat?.range)"
+									@input="handleUpdateBaseStat('range', +($event.target as HTMLInputElement).value)" />
 							</div>
 						</td>
 					</tr>
@@ -97,7 +113,8 @@ const formatSigned = (value: number = 0) => {
 							<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
 									type="number"
-									@input="handleUpdateBaseAttr('speed', +($event.target as HTMLInputElement).value)" />
+									:value="formatInput(baseStat?.speed)"
+									@input="handleUpdateBaseStat('speed', +($event.target as HTMLInputElement).value)" />
 							</div>
 						</td>
 					</tr>
@@ -109,7 +126,8 @@ const formatSigned = (value: number = 0) => {
 							<div class="text-right">
 								<input class="input input-sm max-w-[5rem] text-center"
 									type="number"
-									@input="handleUpdateBaseAttr('int', +($event.target as HTMLInputElement).value)" />
+									:value="formatInput(baseStat?.int)"
+									@input="handleUpdateBaseStat('int', +($event.target as HTMLInputElement).value)" />
 							</div>
 						</td>
 					</tr>

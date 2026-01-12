@@ -1,6 +1,6 @@
 import { type IPart } from '@/models/Part'
 
-export class SlotRow{
+export class PartRow{
 	constructor(
 		private readonly _id: number,
 		public type: string,
