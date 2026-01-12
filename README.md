@@ -6,6 +6,8 @@
 ![Tailwind](https://img.shields.io/badge/tailwind-4.1-38B2AC) 
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
+> Demo: https://kritpongt.github.io/vue-bot-tuner/
+
 > Build the ultimate battle robot with real-time stat optimization and multi-build management
 
 ---
