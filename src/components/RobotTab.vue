@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import type { useRobotGarage } from '@/composables/useRobotGarage';
 import type { PartType, WeaponPartType } from '@/models/Part';
-import { usePartRows } from '@/composables/usePartRows'
-import { useStats } from '@/composables/useStats'
-import { useWeapons } from '@/composables/useWeapons'
+// import { usePartRows } from '@/composables/usePartRows'
+// import { useStats } from '@/composables/useStats'
+// import { useWeapons } from '@/composables/useWeapons'
+import { useRobot } from '@/composables/useRobot'
 
 import StatsCard from '@/components/StatsCard.vue'
 import PartsCard from '@/components/PartsCard.vue'
-import WeaponCard from '@/components/WeaponCard.vue'
+import WeaponSection from '@/components/WeaponSection.vue';
+// import WeaponCard from '@/components/WeaponCard.vue'
 
 type RobotTabProps = {
 	robotGarage: ReturnType<typeof useRobotGarage>,
@@ -28,11 +30,12 @@ const robot = computed(() => {
 	return activeRobot
 })
 
-const { usedCapa, maxCapa, remainingSlots, totalStats, updateBaseStat, updateCurrentCapa, updateMaxCapa, updateMaxSlots } = useStats(robot)
-const { rows, addRow, removeRow, updateRow } = usePartRows(robot)
-const { weapons, weaponsStats, addWeapon, updateWeaponBaseStat, updateWeaponType } = useWeapons(robot)
-
 const handleAddRobot = () => { emits('addRobot') }
+
+// const { usedCapa, updateCurrentCapa, updateMaxCapa, updateMaxSlots, updateBaseStat } = useStats(robot)
+// const { rows, addRow, removeRow, updateRow } = usePartRows(robot)
+// const { weapons, weaponsStats, addWeapon, updateWeaponBaseStat, updateWeaponType } = useWeapons(robot)
+const { stats, slots, weapons } = useRobot(robot)
 
 // watch(() => props.robotGarage.robots.value, () => {
 // 	// console.log(val)
@@ -55,10 +58,10 @@ const handleAddRobot = () => { emits('addRobot') }
 				<div class="flex">
 					<StatsCard
 						title="Stats"
-						:usedCapa="usedCapa"
-						:maxCapa="maxCapa"
-						:remainingSlots="remainingSlots"
-						:stats="totalStats"
+						:usedCapa="stats.usedCapa.value"
+						:maxCapa="stats.maxCapa.value"
+						:remainingSlots="stats.remainingSlots.value"
+						:stats="stats.totalStats.value"
 					/>
 				</div>
 				<div class="flex">
@@ -69,10 +72,10 @@ const handleAddRobot = () => { emits('addRobot') }
 						:maxCapa="robot.maxCapa"
 						:remainingSlots="robot.maxSlots"
 						:stats="robot.baseStats"
-						@updateBaseStat="(key, value) => { updateBaseStat(key, value) }"
-						@updateCurrentCapa="(value) => { updateCurrentCapa(value) }"
-						@updateMaxCapa="(value) => { updateMaxCapa(value) }"
-						@updateMaxSlots="(value) => { updateMaxSlots(value) }"
+						@updateBaseStat="(key, value) => { stats.updateBaseStat(key, value) }"
+						@updateCurrentCapa="(value) => { stats.updateCurrentCapa(value) }"
+						@updateMaxCapa="(value) => { stats.updateMaxCapa(value) }"
+						@updateMaxSlots="(value) => { stats.updateMaxSlots(value) }"
 						@inputSave="props.robotGarage.inputSave"
 					/>
 				</div>
@@ -81,43 +84,25 @@ const handleAddRobot = () => { emits('addRobot') }
 				<PartsCard :customClass="['max-h-[563px]']"
 					:partTypes="partTypes"
 					:partsByType="partsByType"
-					:partRows="rows"
-					@addRow="addRow"
-					@removeRow="(id) => { removeRow(id) }"
-					@updateRow="(id, update) => { updateRow(id, update) }"
+					:partRows="slots.rows.value"
+					@addRow="slots.addRow"
+					@removeRow="(id) => { slots.removeRow(id) }"
+					@updateRow="(id, update) => { slots.updateRow(id, update) }"
 				/>
 			</div>
 		</div>
-		<!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-			<div class="grid grid-cols-1 gap-4 md:justify-items-center">
-				<StatsCard
-					title="Stats"
-					:usedCapa="usedCapa"
-					:maxCapa="maxCapa"
-					:remainingSlots="remainingSlots"
-					:stats="totalStats"
-				/>
-				<StatsCard
-					title="Base stats"
-					:editable="true"
-					@updateBaseStats="(key, value) => { updateBaseStat(key, value) }"
-					@updateCurrentCapa="(value) => { updateCurrentCapa(value) }"
-					@updateMaxCapa="(value) => { updateMaxCapa(value) }"
-					@updateMaxSlots="(value) => { updateMaxSlots(value) }"
-				/>
-			</div>
-			<PartsCard :customClass="['max-h-[614px]']"
-				:partTypes="partTypes"
-				:partsByType="partsByType"
-				:partRows="slotRows"
-				@addRow="addRow"
-				@removeRow="(id) => { removeRow(id) }"
-				@updateRow="(id, update) => { updateRow(id, update) }"
-			/>
-		</div> -->
 
 		<div class="flex flex-col items-center gap-4 w-full max-w-6xl">
-			<template v-for="weapon in weapons" :key="weapon.id">
+			<WeaponSection
+				v-for="weapon in weapons.list.value" :key="weapon.id"
+				:weapon="weapon"
+				@add="weapons.addWeapon"
+				@remove="weapons.removeWeapon(weapon.id)"
+			/>
+		</div>
+
+		<!-- <div class="flex flex-col items-center gap-4 w-full max-w-6xl">
+			<template v-for="weapon in weapons.weapons.value" :key="weapon.id">
 				<div class="flex flex-col md:flex-row gap-4 w-full">
 					<div class="flex md:w-1/2">
 						<template v-if="weaponsStats[weapon.id]">
@@ -148,37 +133,6 @@ const handleAddRobot = () => { emits('addRobot') }
 					</div>
 				</div>
 			</template>
-		</div>
+		</div> -->
 	</div>
-	<!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-		<template v-for="weapon in weapons" :key="weapon.id">
-			<div class="justify-items-center">
-				<template v-if="weaponsLiveAttr[weapon.id]">
-					<WeaponCard
-						:title="`Weapon #${weapon.id + 1}`"
-						:liveAttr1="weaponsLiveAttr[weapon.id]?.liveAttr1 ?? {}"
-						:liveAttr2="weaponsLiveAttr[weapon.id]?.liveAttr2 ?? {}"
-						@addWeapon="addWeapon"
-						@updateBaseAttr="(attr) => { updateBaseAttr(weapon.id, attr) }"
-						@updateWeaponType="(type) => { updateWeaponType(weapon.id, type) }"
-					/>
-				</template>
-			</div>
-			<div class="pt-[1.3rem]">
-				<PartsCard :customClass="['h-full', 'max-h-[264px]']"
-					:selectWeaponType="weapon.weaponType"
-					:partTypes="weaponPartTypes"
-					:partsByType="partsByType"
-					:partRows="weapon.slotRows.slotRows.value"
-					@addRow="weapon.slotRows.addRow"
-					@removeRow="(id) => { weapon.slotRows.removeRow(id) }"
-					@updateRow="(id, update) => { weapon.slotRows.updateRow(id, update) }"
-				/>
-			</div>
-		</template>
-	</div> -->
-
 </template>
-
-<style scoped>
-</style>

@@ -13,7 +13,7 @@ interface WeaponCardEmits{
 	addWeapon: []
 	updateWeaponBaseStat: [attr: Partial<WeaponStat>]
 	updateWeaponType: [type: string]
-	inputSave: []
+	// inputSave: []
 }
 
 const props = defineProps<WeaponCardProps>()
@@ -21,11 +21,11 @@ const emits = defineEmits<WeaponCardEmits>()
 
 const handleAddWeapon = () => {
 	emits('addWeapon')
-	emits('inputSave')
+	// emits('inputSave')
 }
 const handleUpdateBaseStat = (key: keyof WeaponStat, value: number) => {
 	emits('updateWeaponBaseStat', { [key]: value })
-	emits('inputSave')
+	// emits('inputSave')
 }
 
 // const typeSelected = ref<string>('ALL')

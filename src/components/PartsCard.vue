@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { watch } from 'vue'
-import type { Row, UpdateRow } from '@/composables/usePartRows'
+// import type { Row, UpdateRow } from '@/composables/usePartRows'
+import type { Row, UpdateRow } from '@/composables/useRobot/usePartRows'
 
 type PartsCardProps = {
 	partTypes: string[]

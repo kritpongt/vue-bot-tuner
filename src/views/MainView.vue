@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, provide } from 'vue'
+import { onMounted } from 'vue'
 import { useParts } from '@/composables/useParts'
 import { useRobotGarage } from '@/composables/useRobotGarage'
 
